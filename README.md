@@ -7,7 +7,7 @@ go build integration-cli
 
 chmod +x integration-cli
 
-sudo mv integration-cli /usr/bin/local/
+sudo mv integration-cli /usr/local/bin/
 
 
 ```
