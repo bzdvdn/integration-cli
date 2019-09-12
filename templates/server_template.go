@@ -11,6 +11,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/gin-contrib/sse v0.1.0
 	github.com/gin-gonic/gin v1.4.0
+	github.com/gin-contrib/location v0.0.1
 	github.com/google/uuid v1.1.1
 	github.com/jinzhu/gorm v1.9.10
 	github.com/sirupsen/logrus v1.4.2
@@ -43,7 +44,7 @@ type Server struct {
 func NewServer(c *Config) *Server {
 	return &Server{
 		config: c,
-		router: gin.Default(),
+		router: NewRouter(),
 	}
 }
 
@@ -61,7 +62,7 @@ func (s *Server) Start() error {
 	}
 	s.db = db
 	api.Health(s.router)
-	s.router.Run()
+	s.router.Run(s.config.BindAddr)
 	return nil
 }
 `
@@ -102,6 +103,30 @@ func NewConfig() *Config {
 func RouterGO() (string, string) {
 	filename := "server/router.go"
 	body := `package server
+import (
+	"github.com/gin-contrib/location"
+	"github.com/gin-gonic/gin"
+)
+// Health ...
+func Health(r *gin.Engine) {
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "working!",
+		})
+	})
+}
+
+// NewRouter ...
+func NewRouter() *gin.Engine {
+	router := gin.Default()
+	bindRoutes(router)
+	return router
+}
+
+func bindRoutes(e *gin.Engine) {
+	e.Use(location.Default())
+	Health(e)
+}
 `
 	return filename, body
 }
